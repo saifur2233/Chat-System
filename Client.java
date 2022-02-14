@@ -15,26 +15,32 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileSystemView;
 
 public class Client {
 
 	private JFrame frame;
 	private JTextArea textArea;
+        private JTextPane textPane;
 	private JTextField textField;
 	private JTextField txt_port;
 	private JTextField txt_hostIp;
@@ -42,11 +48,16 @@ public class Client {
 	private JButton btn_start;
 	private JButton btn_stop;
 	private JButton btn_send;
+        private JButton btn_clear;
+        private JButton btn_file;
 	private JPanel northPanel;
 	private JPanel southPanel;
 	private JScrollPane rightScroll;
 	private JScrollPane leftScroll;
 	private JSplitPane centerSplit;
+        private JRadioButton oneToNRadioBtn;
+	private JRadioButton broadcastBtn;
+        String id, clientIds = "";
 
 	private JList userList;
 	private DefaultListModel listModel;
@@ -62,8 +73,9 @@ public class Client {
 	public static void main(String[] args) {
 		new Client();
 	}
+
 	// execute send
-        public void send() {
+	public void send() {
 		if (!isConnected) {
 			JOptionPane.showMessageDialog(frame, "Not connected yet, can't send message!", "ERROR",
 					JOptionPane.ERROR_MESSAGE);
@@ -86,15 +98,20 @@ public class Client {
 		textArea = new JTextArea();
 		textArea.setEditable(false);
 		textArea.setForeground(Color.blue);
+                
+                oneToNRadioBtn = new JRadioButton("1-to-N");
+                broadcastBtn = new JRadioButton("Multicast");
 
 		textField = new JTextField();
 		txt_port = new JTextField("6666");
-		txt_hostIp = new JTextField("localhost");
-		txt_name = new JTextField("Mary");
+		txt_hostIp = new JTextField("192.168.0.109");
+		txt_name = new JTextField("Saifur");
 
 		btn_start = new JButton("Start");
 		btn_stop = new JButton("Stop");
 		btn_send = new JButton("Send");
+                btn_clear = new JButton("Clear");
+                btn_file = new JButton("File");
 
 		listModel = new DefaultListModel();
 		userList = new JList(listModel);
@@ -109,16 +126,21 @@ public class Client {
 		northPanel.add(txt_name);
 		northPanel.add(btn_start);
 		northPanel.add(btn_stop);
+                northPanel.add(btn_clear);
+                northPanel.add(btn_file);
 		northPanel.setBorder(new TitledBorder("Connection info:"));
 
 		rightScroll = new JScrollPane(textArea);
 		rightScroll.setBorder(new TitledBorder("Chatting room:"));
 		leftScroll = new JScrollPane(userList);
 		leftScroll.setBorder(new TitledBorder("Online clients:"));
+                
 
 		southPanel = new JPanel(new BorderLayout());
 		southPanel.add(textField, "Center");
 		southPanel.add(btn_send, "East");
+                //southPanel.add(btn_file);
+                
 		southPanel.setBorder(new TitledBorder("Write message here:"));
 
 		centerSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftScroll, rightScroll);
@@ -130,7 +152,7 @@ public class Client {
 		frame.add(northPanel, "North");
 		frame.add(centerSplit, "Center");
 		frame.add(southPanel, "South");
-		frame.setSize(600, 400);
+		frame.setSize(700, 400);
 		int screen_width = Toolkit.getDefaultToolkit().getScreenSize().width;
 		int screen_height = Toolkit.getDefaultToolkit().getScreenSize().height;
 		frame.setLocation((screen_width - frame.getWidth()) / 2, (screen_height - frame.getHeight()) / 2);
@@ -150,7 +172,52 @@ public class Client {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				send();
+                                String textAreaMessage = textField.getText().trim();
+                                if (textAreaMessage != null && !textAreaMessage.isEmpty()) {
+                                String messageToBeSentToServer = "";
+				
+                                
+                                List<String> clientList = userList.getSelectedValuesList();
+                                System.out.println("selected user"+ clientList);
+                                if (clientList.size() == 0){
+                                    send(); // send to all
+                                }// if no user is selected then set the flag for further use
+                                else if(clientList.size() > 0) {
+                                    
+                                    textArea.append(frame.getTitle() + ": " + textAreaMessage + "\r\n");
+                                 //send(); // send to all
+                                }else{
+                                    send(); // send to all
+                                }  
+				
+                                }
+                                else{
+                                    JOptionPane.showMessageDialog(frame, "Please write a message!", "ERROR",
+                                JOptionPane.ERROR_MESSAGE);
+                                    // textfield has no msg
+                                }
+				
+			}
+		});
+                
+                // when click "Clear" button
+		btn_clear.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				textArea.setText("");
+			}
+		});
+                
+                // when click "File" button
+		btn_file.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+		             JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView());
+                                // Open the save dialog
+                                j.showSaveDialog(null);
+                                
 			}
 		});
 
@@ -213,7 +280,6 @@ public class Client {
 
 		// when close the window disconnect server
 		frame.addWindowListener(new WindowAdapter() {
-                        @Override
 			public void windowClosing(WindowEvent e) {
 				if (isConnected) {
 					closeConnection();
@@ -242,6 +308,7 @@ public class Client {
 			return true;
 		} catch (Exception e) {
 			textArea.append("Connection fialed! port: " + port + " hostIp: " + hostIp + "\r\n");
+                        
 			isConnected = false;
 			return false;
 		}
@@ -305,7 +372,6 @@ public class Client {
 			isConnected = false;
 		}
 
-                @Override
 		public void run() {
 			String message = "";
 			while (true) {

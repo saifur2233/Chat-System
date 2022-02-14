@@ -41,6 +41,7 @@ public class Server {
 	private JButton btn_start;
 	private JButton btn_stop;
 	private JButton btn_send;
+        private JButton btn_clear;
 	private JPanel northPanel;
 	private JPanel southPanel;
 	private JScrollPane rightPanel;
@@ -61,7 +62,7 @@ public class Server {
 	public static void main(String[] args) {
 		new Server();
 	}
-        
+
 	public void send() {
 		if (!isStart) {
 			JOptionPane.showMessageDialog(frame, "Server is not running now.", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -98,6 +99,7 @@ public class Server {
 		btn_start = new JButton("Start");
 		btn_stop = new JButton("Stop");
 		btn_send = new JButton("Send");
+                btn_clear = new JButton("Clear");
 		btn_stop.setEnabled(false);
 
 		listModel = new DefaultListModel();
@@ -125,13 +127,14 @@ public class Server {
 		northPanel.add(txt_port);
 		northPanel.add(btn_start);
 		northPanel.add(btn_stop);
+                northPanel.add(btn_clear);
 		northPanel.setBorder(new TitledBorder("Setting info:"));
 
 		frame.setLayout(new BorderLayout());
 		frame.add(northPanel, "North");
 		frame.add(centerSplit, "Center");
 		frame.add(southPanel, "South");
-		frame.setSize(600, 400);
+		frame.setSize(650, 400);
 		int screen_width = Toolkit.getDefaultToolkit().getScreenSize().width;
 		int screen_height = Toolkit.getDefaultToolkit().getScreenSize().height;
 		frame.setLocation((screen_width - frame.getWidth()) / 2, (screen_height - frame.getHeight()) / 2);
@@ -162,6 +165,15 @@ public class Server {
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				send();
+			}
+		});
+                
+                // when click "Clear" button
+		btn_clear.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				contentArea.setText("");
 			}
 		});
 
@@ -206,8 +218,8 @@ public class Server {
 				}
 			}
 		});
+
 		// when click the "stop" button
-                
 		btn_stop.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -296,7 +308,6 @@ public class Server {
 			this.max = max;
 		}
 
-                @Override
 		public void run() {
 			while (true) {
 				try {
