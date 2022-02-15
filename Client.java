@@ -184,8 +184,8 @@ public class Client {
                                 }// if no user is selected then set the flag for further use
                                 else if(clientList.size() > 0) {
                                     
-                                    textArea.append(frame.getTitle() + ": " + textAreaMessage + "\r\n");
-                                 //send(); // send to all
+                                    //textArea.append(frame.getTitle() + ": " + textAreaMessage + "\r\n");
+                                 send(); // send to all
                                 }else{
                                     send(); // send to all
                                 }  
